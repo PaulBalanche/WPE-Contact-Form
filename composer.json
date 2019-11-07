@@ -1,7 +1,7 @@
 {
-    "name": "wpextend/contact-form",
+    "name": "wpextend/wpe-contact-form",
     "description": "Adds admin-post/admin-ajax support, saving form entries in custom post type, export in CSV feature (properly developed by WPExtend team)",
-    "version": "1.0.3",
+    "version": "1.0.4",
     "type": "wordpress-plugin",
     "keywords": ["wordpress", "plugin", "boilerplate-plugin"],
     "homepage": "https://github.com/PaulBalanche/basic-wordpress-boilerplate-plugin",
