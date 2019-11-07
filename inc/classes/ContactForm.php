@@ -118,7 +118,7 @@ class ContactForm {
 
                 preg_match('/^(.*) : (.*)$/U', $subject, $matches);
                 if( is_array($matches) && count($matches) == 3 ) {
-                    if( $matches[2] == $_POST['subject'] ){
+                    if( $matches[2] == stripslashes($_POST['subject']) ){
                         $email_to = $matches[1];
                         $email_subject = $matches[2];
                         break;

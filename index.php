@@ -3,7 +3,7 @@
 * Plugin Name: WPE Contact form
 * Description: Adds admin-post/admin-ajax support, saving form entries in custom post type, export in CSV feature (properly developed by WPExtend team)
 * Text Domain: wpe-contact-form
-* Version: 1.0.4
+* Version: 1.0.5
 * Author: Paul Balanche
 **/
 
