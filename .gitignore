@@ -2,3 +2,5 @@ vendor/
 
 export/*
 !export/.gitkeep
+
+composer.lock

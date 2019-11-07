@@ -2,6 +2,9 @@
 
 namespace WpeContactForm;
 
+use \Wpextend\Package\RenderAdminHtml;
+use \Wpextend\Package\TypeField;
+
 /**
  *
  */
@@ -99,7 +102,10 @@ class Entry {
      * 
      */
     public function register_contact_form_entry(){
-    
+        
+        // Base 64 encoded SVG image.
+        $icon_svg = 'data:image/svg+xml;base64,' . base64_encode( file_get_contents( PLUGIN_DIR_PATH . 'assets/img/icon.svg' ) );
+
         $args = [
             'description'           => '',
             'public'                => true,
@@ -128,23 +134,24 @@ class Entry {
             'map_meta_cap'          => true,
             'hierarchical'          => false,
             'menu_position'         => 'null',
+            'menu_icon'             => $icon_svg,
             'rewrite'               => false,
             'has_archive'           => false,
             'show_in_rest'          => false,
             'supports'              => false,
             'labels' => [
-                'name'                  => __('Messages contact', PLUGIN_TEXTDOMAIN),
-                'singular_name'         => __('Message contact', PLUGIN_TEXTDOMAIN),
-                'add_new'               => __('Ajouter', PLUGIN_TEXTDOMAIN),
-                'add_new_item'          => __('Ajouter un message contact', PLUGIN_TEXTDOMAIN),
-                'new_item'              => __('Nouveau', PLUGIN_TEXTDOMAIN),
-                'edit_item'             => __('Editer', PLUGIN_TEXTDOMAIN),
-                'view_item'             => __('Voir', PLUGIN_TEXTDOMAIN),
-                'all_items'             => __('Tous les messages', PLUGIN_TEXTDOMAIN),
-                'search_items'          => __('Chercher', PLUGIN_TEXTDOMAIN),
+                'name'                  => __('Contact entries', PLUGIN_TEXTDOMAIN),
+                'singular_name'         => __('Contact entry', PLUGIN_TEXTDOMAIN),
+                'add_new'               => __('Add', PLUGIN_TEXTDOMAIN),
+                'add_new_item'          => __('Add new contact entry', PLUGIN_TEXTDOMAIN),
+                'new_item'              => __('New', PLUGIN_TEXTDOMAIN),
+                'edit_item'             => __('Edit', PLUGIN_TEXTDOMAIN),
+                'view_item'             => __('View', PLUGIN_TEXTDOMAIN),
+                'all_items'             => __('All entries', PLUGIN_TEXTDOMAIN),
+                'search_items'          => __('Search', PLUGIN_TEXTDOMAIN),
                 'parent_item_colon'     => __('Message contact paerent', PLUGIN_TEXTDOMAIN),
-                'not_found'             => __('Aucun message contact...', PLUGIN_TEXTDOMAIN),
-                'not_found_in_trash'    => __('Aucun message contact supprimé...', PLUGIN_TEXTDOMAIN)
+                'not_found'             => __('No entries', PLUGIN_TEXTDOMAIN),
+                'not_found_in_trash'    => __('No entries deleted', PLUGIN_TEXTDOMAIN)
             ]
         ];
 
@@ -192,11 +199,11 @@ class Entry {
 
         $all_post_metadata = get_metadata('post', $post->ID);
 
-        $return_html = \Wpextend\RenderAdminHtml::table_edit_open();
+        $return_html = RenderAdminHtml::table_edit_open();
         foreach( ContactForm::get_fields() as $key_field => $label_field ) {
-            $return_html .= \Wpextend\TypeField::render_label_and_free_html($label_field , '', ( isset($all_post_metadata[METADATA_PREFIX . $key_field]) ) ? nl2br($all_post_metadata[METADATA_PREFIX . $key_field][0]) : '' );
+            $return_html .= TypeField::render_label_and_free_html($label_field , '', ( isset($all_post_metadata[METADATA_PREFIX . $key_field]) ) ? nl2br($all_post_metadata[METADATA_PREFIX . $key_field][0]) : '' );
         }
-        $return_html .= \Wpextend\RenderAdminHtml::table_edit_close();
+        $return_html .= RenderAdminHtml::table_edit_close();
 
         echo $return_html;
     }
