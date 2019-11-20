@@ -50,6 +50,24 @@ class Entry {
         add_action( 'admin_post_nopriv_' . self::$export_admin_post_action, array($this, 'export_admin_post_action') );
 
         add_action( 'admin_init', array($this, 'add_contact_form_entry_caps') );
+
+        // Action fired when listing contact form entries
+        add_action( 'admin_head-edit.php', array($this, 'contact_form_entry_listing_page') );
+    }
+
+
+
+    /**
+     * Action fired when listing contact form entries
+     * 
+     */
+    public function contact_form_entry_listing_page() {
+
+        global $post_type;
+        if( $post_type != self::$contact_form_entry_name_custom_post_type )
+            return;
+
+        Helper::user_set_notification_number_post();
     }
 
 
@@ -248,6 +266,22 @@ class Entry {
         $goback = add_query_arg( 'csv', PLUGIN_URL . 'export/' . $name_csv_file, wp_get_referer() );
         wp_safe_redirect( $goback );
         exit;
+    }
+
+
+
+    /**
+     * Get number of contact entries
+     * 
+     */
+    static public function get_count_entries() {
+
+        $count_post = wp_count_posts(self::$contact_form_entry_name_custom_post_type);
+
+        if( is_object($count_post) && isset($count_post->publish) )
+            return $count_post->publish;
+
+        return 0;
     }
 
 

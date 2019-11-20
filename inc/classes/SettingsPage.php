@@ -50,7 +50,17 @@ class SettingsPage {
 	 * 
 	 */
     public function add_submenu_contact_form_page(){
-        
+		
+		$update_count = Helper::get_notification_number_new_post();
+		if( $update_count > 0 ) {
+			
+			global $menu;
+			foreach( $menu as $key => $val ) {
+				if( $val[1] == 'edit_contact_form_entries' )
+					$menu[$key][0] = $val[0] . sprintf( '<span class="update-plugins"><span class="update-count">%s</span></span>', $update_count );
+			}
+		}
+		
         add_submenu_page( 'edit.php?post_type=' . Entry::$contact_form_entry_name_custom_post_type, 'Contact form settings', 'Settings', 'manage_options', 'wpe_contact_settings', array($this, 'render_settings_admin_page') );
     }
 

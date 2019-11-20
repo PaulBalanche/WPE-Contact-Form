@@ -79,4 +79,34 @@ class Helper {
 
 
 
+    /**
+     * Return number of new post to see for the current user
+     * 
+     */
+    public static function get_notification_number_new_post() {
+
+        $number_returned = Entry::get_count_entries();
+
+        $current_user_notif = get_user_meta( get_current_user_id(), '_wpe_contact_new_entries_notification', true );
+        if( $current_user_notif && is_numeric($current_user_notif) ) {
+
+            $number_returned = $number_returned - $current_user_notif;
+        }
+
+        return $number_returned;
+    }
+
+
+
+    /**
+     * Set number of post to the current user
+     * 
+     */
+    public static function user_set_notification_number_post() {
+
+        update_user_meta( get_current_user_id(), '_wpe_contact_new_entries_notification', Entry::get_count_entries() );
+    }
+
+
+
 }
