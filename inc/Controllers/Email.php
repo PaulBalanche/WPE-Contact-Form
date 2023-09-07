@@ -1,6 +1,6 @@
 <?php
 
-namespace WpeContactForm;
+namespace WpeContactForm\Controllers;
 
 /**
  * Email static functions 
@@ -38,7 +38,7 @@ class Email {
      */
     public static function html_footer(){
 
-        return '<div style="border-top: 1px solid rgb(220,220,220);font-style:italic;font-size: 0.9em;margin-top: 40px;padding-top: 10px;">' . sprintf( __('Email sent from <strong>%s</strong> at %s', PLUGIN_TEXTDOMAIN), get_option('blogname'), date('Y-M-d H:i:s') ) . '</div>';
+        return '<div style="border-top: 1px solid rgb(220,220,220);font-style:italic;font-size: 0.9em;margin-top: 40px;padding-top: 10px;">' . sprintf( __('Email sent from <strong>%s</strong> at %s', 'wpe-contact-form'), get_option('blogname'), date('Y-M-d H:i:s') ) . '</div>';
     }
 
 

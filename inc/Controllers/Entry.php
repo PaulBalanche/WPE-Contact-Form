@@ -1,6 +1,6 @@
 <?php
 
-namespace WpeContactForm;
+namespace WpeContactForm\Controllers;
 
 /**
  *
@@ -107,7 +107,7 @@ class Entry {
             'publicly_queryable'    => false,
             'show_in_nav_menus'     => true,
             'show_ui'               => true,
-            'show_in_menu'          => true,
+            'show_in_menu'          => 'wpe-contact-form/admin-forms.php',
             'capability_type'       => ['contact_form_entry', 'contact_form_entries'],
             'capabilities'          => [
                 'edit_post'                 => 'edit_contact_form_entry',
@@ -127,24 +127,23 @@ class Entry {
             ],
             'map_meta_cap'          => true,
             'hierarchical'          => false,
-            'menu_position'         => 'null',
             'rewrite'               => false,
             'has_archive'           => false,
             'show_in_rest'          => false,
             'supports'              => false,
             'labels' => [
-                'name'                  => __('Messages contact', PLUGIN_TEXTDOMAIN),
-                'singular_name'         => __('Message contact', PLUGIN_TEXTDOMAIN),
-                'add_new'               => __('Ajouter', PLUGIN_TEXTDOMAIN),
-                'add_new_item'          => __('Ajouter un message contact', PLUGIN_TEXTDOMAIN),
-                'new_item'              => __('Nouveau', PLUGIN_TEXTDOMAIN),
-                'edit_item'             => __('Editer', PLUGIN_TEXTDOMAIN),
-                'view_item'             => __('Voir', PLUGIN_TEXTDOMAIN),
-                'all_items'             => __('Tous les messages', PLUGIN_TEXTDOMAIN),
-                'search_items'          => __('Chercher', PLUGIN_TEXTDOMAIN),
-                'parent_item_colon'     => __('Message contact paerent', PLUGIN_TEXTDOMAIN),
-                'not_found'             => __('Aucun message contact...', PLUGIN_TEXTDOMAIN),
-                'not_found_in_trash'    => __('Aucun message contact supprimé...', PLUGIN_TEXTDOMAIN)
+                'name'                  => __('Form Entries', 'wpe-contact-form'),
+                'singular_name'         => __('Form entry', 'wpe-contact-form'),
+                'add_new'               => __('Add', 'wpe-contact-form'),
+                'add_new_item'          => __('Add a new entry', 'wpe-contact-form'),
+                'new_item'              => __('New', 'wpe-contact-form'),
+                'edit_item'             => __('Edit', 'wpe-contact-form'),
+                'view_item'             => __('View', 'wpe-contact-form'),
+                'all_items'             => __('Entries', 'wpe-contact-form'),
+                'search_items'          => __('Search', 'wpe-contact-form'),
+                'parent_item_colon'     => __('Parent entry', 'wpe-contact-form'),
+                'not_found'             => __('No entry', 'wpe-contact-form'),
+                'not_found_in_trash'    => __('No entry', 'wpe-contact-form')
             ]
         ];
 
@@ -159,7 +158,7 @@ class Entry {
      */
     public function add_contact_entry_metabox(){
 
-        add_meta_box( 'contact_form_entry_information', __('Détails', PLUGIN_TEXTDOMAIN), array($this, 'entry_metabox_callback') );
+        add_meta_box( 'contact_form_entry_information', __('Détails', 'wpe-contact-form'), array($this, 'entry_metabox_callback') );
     }
 
 
@@ -170,7 +169,7 @@ class Entry {
      */
     public function load_contact_form_entry_script($hook) {
 
-        wp_enqueue_script( 'wpe_contact_form_entry_script', PLUGIN_ASSETS_URL . 'js/admin/Entry.js', array('jquery') );
+        wp_enqueue_script( 'wpe_contact_form_entry_script', WPE_CF_PLUGIN_ASSETS_URL . 'js/admin/Entry.js', array('jquery') );
         wp_localize_script( 'wpe_contact_form_entry_script', 'contact_form_entry_admin', [
             'export_feature' => [
                 'page_title_action_name'  => 'Export',
@@ -192,11 +191,10 @@ class Entry {
 
         $all_post_metadata = get_metadata('post', $post->ID);
 
-        $return_html = \Wpextend\RenderAdminHtml::table_edit_open();
         foreach( ContactForm::get_fields() as $key_field => $label_field ) {
-            $return_html .= \Wpextend\TypeField::render_label_and_free_html($label_field , '', ( isset($all_post_metadata[METADATA_PREFIX . $key_field]) ) ? nl2br($all_post_metadata[METADATA_PREFIX . $key_field][0]) : '' );
+            echo $key_field . ' > ' . $label_field;
+            // $return_html .= \Wpextend\TypeField::render_label_and_free_html($label_field , '', ( isset($all_post_metadata[WPE_CF_METADATA_PREFIX . $key_field]) ) ? nl2br($all_post_metadata[WPE_CF_METADATA_PREFIX . $key_field][0]) : '' );
         }
-        $return_html .= \Wpextend\RenderAdminHtml::table_edit_close();
 
         echo $return_html;
     }
@@ -219,7 +217,7 @@ class Entry {
         if( is_array($entries) && count($entries) > 0 ) {
 
             $name_csv_file = date('Y-M-d_H:i:s') . '.csv';
-            $fp = fopen( PLUGIN_DIR_PATH . 'export/' . $name_csv_file, 'w');
+            $fp = fopen( WPE_CF_PLUGIN_DIR_PATH . 'export/' . $name_csv_file, 'w');
             fputcsv($fp, ContactForm::get_fields());
 
             foreach( $entries as $entry ) {
@@ -229,7 +227,7 @@ class Entry {
                 $metadata = get_metadata('post', $entry->ID);
                 foreach( ContactForm::get_fields() as $key_field => $label_field ) {
 
-                    $csv_line_entry[$key_field] = ( isset($metadata[METADATA_PREFIX . $key_field]) ) ? $metadata[METADATA_PREFIX . $key_field][0] : '';
+                    $csv_line_entry[$key_field] = ( isset($metadata[WPE_CF_METADATA_PREFIX . $key_field]) ) ? $metadata[WPE_CF_METADATA_PREFIX . $key_field][0] : '';
                 }
 
                 fputcsv($fp, $csv_line_entry);
@@ -238,7 +236,7 @@ class Entry {
             fclose($fp);
         }
 
-        $goback = add_query_arg( 'csv', PLUGIN_URL . 'export/' . $name_csv_file, wp_get_referer() );
+        $goback = add_query_arg( 'csv', WPE_CF_PLUGIN_URL . 'export/' . $name_csv_file, wp_get_referer() );
         wp_safe_redirect( $goback );
         exit;
     }

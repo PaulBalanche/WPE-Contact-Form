@@ -1,6 +1,6 @@
 <?php
 
-namespace WpeContactForm;
+namespace WpeContactForm\Controllers;
 
 /**
  * Helper static functions 
@@ -35,10 +35,10 @@ class Helper {
 
             // Define status return code
             $status_code = ( $success ) ? null : 422;
-            wp_send_json([ 'message' => __($message, PLUGIN_TEXTDOMAIN) ], $status_code);
+            wp_send_json([ 'message' => __($message, 'wpe-contact-form') ], $status_code);
         }
         else {
-
+die($message);
             // Define return code
             $code_success = ( $success ) ? 1 : 0;
             $goback = add_query_arg( 'contact_form', $code_success, wp_get_referer() ) . '#' . $_POST['section_id'];

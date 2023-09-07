@@ -1,6 +1,6 @@
 <?php
 
-namespace WpeContactForm;
+namespace WpeContactForm\Controllers;
 
 /**
  * reCAPTCHA static functions 

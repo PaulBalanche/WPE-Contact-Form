@@ -1,6 +1,6 @@
 <?php
 
-namespace WpeContactForm;
+namespace WpeContactForm\Controllers;
 
 /**
  *
@@ -48,7 +48,7 @@ class SettingsPage {
 	 */
     public function add_submenu_contact_form_page(){
         
-        add_submenu_page( \WPEXTEND_MAIN_SLUG_ADMIN_PAGE . '_site_settings', 'Contact form settings', 'Contact form', 'manage_options', 'wpe_contact_settings', array($this, 'render_settings_admin_page') );
+        add_submenu_page( 'wpe_contact_form_site_settings', 'Contact form settings', 'Contact form', 'manage_options', 'wpe_contact_settings', array($this, 'render_settings_admin_page') );
     }
 
 
@@ -59,20 +59,19 @@ class SettingsPage {
 	 */
     public function render_settings_admin_page(){
 
-		$html = \Wpextend\RenderAdminHtml::header( get_admin_page_title() );
+		$html = '<div class="wrap">
+		<h1>' . get_admin_page_title() . '</h1>';
 
-		$html .= '<div class="accordion_wpextend">
-		<h2>Global settings</h2><div>';
-		$html .= \Wpextend\RenderAdminHtml::form_open( admin_url('admin-post.php'), self::$name_action );
-		$html .= \Wpextend\RenderAdminHtml::table_edit_open();
-		$html .= \Wpextend\TypeField::render_input_textarea( 'Contact form fields', ContactForm::$name_fields_in_option_table, self::encode_array_to_string( ContactForm::get_fields() ), false, 'Fill one per line<br />(lastname : Lastname)', false);
-		$html .= \Wpextend\TypeField::render_input_text( 'Email subject', Email::$name_email_subject_in_option_table, Email::get_email_subject() );
-		$html .= \Wpextend\TypeField::render_input_textarea( 'Email message', Email::$name_email_message_in_option_table, Email::get_email_message() );
-		$html .= \Wpextend\TypeField::render_input_text( 'reCAPTCHA secret', Recaptcha::$recaptcha_secret_field_in_option_table, Recaptcha::get_recaptcha_secret() );
-		$html .= \Wpextend\RenderAdminHtml::table_edit_close();
-		$html .= \Wpextend\RenderAdminHtml::form_close('Submit', true);
-		$html .= '</div>
-		</div>';
+		$html .= '<h2>Global settings</h2><div>';
+		// $html .= \Wpextend\RenderAdminHtml::form_open( admin_url('admin-post.php'), self::$name_action );
+		// $html .= \Wpextend\RenderAdminHtml::table_edit_open();
+		// $html .= \Wpextend\TypeField::render_input_textarea( 'Contact form fields', ContactForm::$name_fields_in_option_table, self::encode_array_to_string( ContactForm::get_fields() ), false, 'Fill one per line<br />(lastname : Lastname)', false);
+		// $html .= \Wpextend\TypeField::render_input_text( 'Email subject', Email::$name_email_subject_in_option_table, Email::get_email_subject() );
+		// $html .= \Wpextend\TypeField::render_input_textarea( 'Email message', Email::$name_email_message_in_option_table, Email::get_email_message() );
+		// $html .= \Wpextend\TypeField::render_input_text( 'reCAPTCHA secret', Recaptcha::$recaptcha_secret_field_in_option_table, Recaptcha::get_recaptcha_secret() );
+		// $html .= \Wpextend\RenderAdminHtml::table_edit_close();
+		// $html .= \Wpextend\RenderAdminHtml::form_close('Submit', true);
+		$html .= '</div>';
 		
 		echo $html;
 	}

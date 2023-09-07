@@ -18,12 +18,11 @@
         "email": "paul.balanche@gmail.com"
     },
     "require": {
-        "php": ">=7.0.0",
-        "wpextend/package": "^1.0"
+        "php": ">=7.4"
     },
     "autoload": {
         "psr-4": {
-            "WpeContactForm\\": "inc/classes/"
+            "WpeContactForm\\": "inc/"
         }
     }
 }
