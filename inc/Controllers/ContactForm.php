@@ -54,6 +54,7 @@ class ContactForm {
         add_action( 'init', array($this, 'register_contact_form') );
 
         add_action( 'add_meta_boxes', [ $this,'add_meta_boxes_form'] );
+        add_action( 'save_post', [ $this, 'save_metabox' ], 10, 2 );
     }
 
 
@@ -67,19 +68,68 @@ class ContactForm {
     }
 
     public function meta_boxes_form_settings( $post ) {
+		
+        wp_nonce_field( 'wpecf_metabox', '_wpnonce_wpecf_metabox' );
+
         ?>
          <table class="form-table" role="presentation">
             <tbody>
                 <tr>
                     <th scope="row"><label for="email_to">To</label></th>
                     <td>
-                        <input type="text" id="email_to" class="regular-text" value="" />
+                        <input type="text" id="email_to" name="email_to" class="regular-text" value="<?php echo esc_attr( get_post_meta( $post->ID, '_wpecf_email_to', true ) ); ?>" />
                     </td>
                 </tr>
             </tbody>
          </table>
         <?php
     }
+
+    public function save_metabox( $post_id, $post ) {
+		/*
+		 * We need to verify this came from the our screen and with proper authorization,
+		 * because save_post can be triggered at other times.
+		 */
+
+		// Check if our nonce is set.
+		if ( ! isset( $_POST['_wpnonce_wpecf_metabox'] ) ) {
+			return $post_id;
+		}
+
+		$nonce = $_POST['_wpnonce_wpecf_metabox'];
+
+		// Verify that the nonce is valid.
+		if ( ! wp_verify_nonce( $nonce, 'wpecf_metabox' ) ) {
+			return $post_id;
+		}
+
+		/*
+		 * If this is an autosave, our form has not been submitted,
+		 * so we don't want to do anything.
+		 */
+		if ( defined( 'DOING_AUTOSAVE' ) && DOING_AUTOSAVE ) {
+			return $post_id;
+		}
+
+		// Check the user's permissions.
+		if ( 'page' == $_POST['post_type'] ) {
+			if ( ! current_user_can( 'edit_page', $post_id ) ) {
+				return $post_id;
+			}
+		} else {
+			if ( ! current_user_can( 'edit_post', $post_id ) ) {
+				return $post_id;
+			}
+		}
+
+		/* OK, it's safe for us to save the data now. */
+
+		// Sanitize the user input.
+		$email_to = sanitize_text_field( $_POST['email_to'] );
+
+		// Update the meta field.
+		update_post_meta( $post_id, '_wpecf_email_to', $email_to );
+	}
 
 
     /**
@@ -182,13 +232,12 @@ class ContactForm {
             'show_ui'               => true,
             'show_in_menu'          => 'wpe-contact-form/admin-forms.php',
             'capability_type'       => 'post',
-            'map_meta_cap'          => true,
             'hierarchical'          => false,
             'rewrite'               => false,
             'has_archive'           => false,
             'show_in_rest'          => true,
             'supports'              => [
-                'title', 'editor'
+                'title', 'editor', 'custom-fields'
             ],
             'labels' => [
                 'name'                  => __('Forms', 'wpe-contact-form'),

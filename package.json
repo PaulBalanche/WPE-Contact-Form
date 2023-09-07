@@ -1,0 +1,32 @@
+{
+  "name": "wpe-contact-form",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "build": "wp-scripts build",
+    "format": "wp-scripts format",
+    "lint:js": "wp-scripts lint-js",
+    "start": "wp-scripts start"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/PaulBalanche/contact-form-plugin.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/PaulBalanche/contact-form-plugin/issues"
+  },
+  "homepage": "https://github.com/PaulBalanche/contact-form-plugin#readme",
+  "devDependencies": {
+    "@wordpress/scripts": "26.12.0"
+  },
+  "dependencies": {
+    "@wordpress/block-editor": "^12.9.0",
+    "@wordpress/components": "^25.7.0",
+    "@wordpress/core-data": "^6.18.0",
+    "@wordpress/data": "^9.11.0",
+    "@wordpress/element": "^5.18.0"
+  }
+}

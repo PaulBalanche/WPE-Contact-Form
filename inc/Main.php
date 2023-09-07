@@ -6,6 +6,7 @@ use WpeContactForm\Controllers\ContactForm as ContactFormController;
 use WpeContactForm\Controllers\Entry as EntryController;
 use WpeContactForm\Controllers\SettingsPage as SettingsPageController;
 use WpeContactForm\Controllers\BackOffice as BackOfficeController;
+use WpeContactForm\Controllers\Fields as FieldsController;
 
 /**
  *
@@ -38,6 +39,7 @@ class Main {
         EntryController::getInstance();
         SettingsPageController::getInstance();
         new BackOfficeController();
+        new FieldsController();
     }
 
 
