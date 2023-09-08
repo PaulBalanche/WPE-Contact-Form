@@ -16,11 +16,9 @@ registerBlockType('custom/wpe-contact-form-field', {
     title: 'Field',
     category: 'wpe-layout',
     attributes: attributes,
-    edit: ( { attributes, setAttributes, isSelected } ) => {
+    edit: (props) => {
         return <Edit
-            attributes={attributes}
-            setAttributes={setAttributes}
-            isSelected={isSelected}
+            props={props}
         />
     },
     save: () => {

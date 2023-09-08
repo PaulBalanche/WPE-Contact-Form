@@ -56,7 +56,7 @@ class Entries {
     }
 
     public function add_form_filter( $options ) {
-        $screen = get_current_screen();
+        $screen = \get_current_screen();
         if( $screen->id == 'edit-' . self::$contact_form_entry_name_custom_post_type ){
             $my_args = [
                 'post_type' => 'wpe_contact_form',
@@ -71,13 +71,17 @@ class Entries {
     }
 
     public function by_form_filtering($query) {
-        $screen = get_current_screen();
-        if( $screen && is_object($screen) && isset($screen->id) && $screen->id == 'edit-' . self::$contact_form_entry_name_custom_post_type && $query->get('post_type') == self::$contact_form_entry_name_custom_post_type ){
-            if(isset($_GET['form_id'])){
-                $contact_form_id = sanitize_text_field($_GET['form_id']);
-                if( is_numeric($contact_form_id)){
-                    $query->set( 'meta_key', WPE_CF_METADATA_PREFIX . 'form_id' );
-                    $query->set( 'meta_value', $contact_form_id );
+
+        if( is_admin() ) {
+
+            $screen = \get_current_screen();
+            if( $screen && is_object($screen) && isset($screen->id) && $screen->id == 'edit-' . self::$contact_form_entry_name_custom_post_type && $query->get('post_type') == self::$contact_form_entry_name_custom_post_type ){
+                if(isset($_GET['form_id'])){
+                    $contact_form_id = sanitize_text_field($_GET['form_id']);
+                    if( is_numeric($contact_form_id)){
+                        $query->set( 'meta_key', WPE_CF_METADATA_PREFIX . 'form_id' );
+                        $query->set( 'meta_value', $contact_form_id );
+                    }
                 }
             }
         }
