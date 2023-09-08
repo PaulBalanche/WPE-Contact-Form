@@ -2,7 +2,7 @@
 
 namespace WpeContactForm\Controllers;
 
-class Fields {
+class FieldsBlock {
 
     private $handle_name = 'wpe_contact_form_editor';
 

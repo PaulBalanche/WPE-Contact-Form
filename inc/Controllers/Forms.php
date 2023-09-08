@@ -2,38 +2,22 @@
 
 namespace WpeContactForm\Controllers;
 
+use \WpeContactForm\Models\Form as FormModel;
 /**
  *
  */
-class ContactForm {
+class Forms {
 
-
-
-    private static $_instance;
     public static $admin_post_action = 'contact_form_submit',
         $contact_form_name_custom_post_type = 'wpe_contact_form',
         $name_fields_in_option_table = 'wpe_contact_form_fields';
-
-
-
-	/**
-	 * Static method which instanciate ContactForm
- 	 */
-	public static function getInstance() {
-		 if (is_null(self::$_instance)) {
-			  self::$_instance = new ContactForm();
-		 }
-		 return self::$_instance;
-	}
-
-
 
 	/**
 	 * The constructor.
 	 *
 	 * @return void
 	 */
-	private function __construct() {
+	public function __construct() {
 
 		// Define actions and filters
         $this->create_hooks();
@@ -49,12 +33,23 @@ class ContactForm {
 
         add_action( 'wp_ajax_' . self::$admin_post_action, array($this, 'action_post_contact_form') );
         add_action( 'wp_ajax_nopriv_' . self::$admin_post_action, array($this, 'action_post_contact_form') );
+        add_action( 'admin_post_' . self::$admin_post_action, array($this, 'action_post_contact_form') );
+        add_action( 'admin_post_nopriv_' . self::$admin_post_action, array($this, 'action_post_contact_form') );
 
         // Register Contact Form  custom post type
         add_action( 'init', array($this, 'register_contact_form') );
 
         add_action( 'add_meta_boxes', [ $this,'add_meta_boxes_form'] );
         add_action( 'save_post', [ $this, 'save_metabox' ], 10, 2 );
+
+        add_filter( 'Abt\attribute_format_form', [ $this, 'attribute_format_form' ] );
+    }
+
+
+    public function attribute_format_form($form_id) {
+
+        $formInstance = new FormModel($form_id);
+        return $formInstance->format_for_view();
     }
 
 
@@ -160,61 +155,39 @@ class ContactForm {
      */
     public function action_post_contact_form() {
 
-        // Nounce check
-        if( !check_ajax_referer(self::$admin_post_action, false, false) ) {
-            Helper::form_send_response( __('Nounce error', 'wpe-contact-form'), false );
+        if( ! isset($_REQUEST['form_id']) || ! is_numeric($_REQUEST['form_id']) ) {
+            Helper::form_send_response( __('Form ID\'s missing', 'wpe-contact-form'), false );
         }
 
+        // Nounce check
+        // if( !check_ajax_referer(self::$admin_post_action, false, false) ) {
+        //     Helper::form_send_response( __('Nounce error', 'wpe-contact-form'), false );
+        // }
+
         // Email check
-        if( !filter_var($_POST['email'], FILTER_VALIDATE_EMAIL) ) {
-            Helper::form_send_response( __('Invalid email', 'wpe-contact-form'), false );
-        }
+        // if( !filter_var($_POST['email'], FILTER_VALIDATE_EMAIL) ) {
+        //     Helper::form_send_response( __('Invalid email', 'wpe-contact-form'), false );
+        // }
 
         // reCAPTCHA check
         if( Recaptcha::recaptcha_is_enable() && ( ! isset($_POST['g-recaptcha-response']) || ! Recaptcha::recaptcha_check($_POST['g-recaptcha-response']) ) ) {
             Helper::form_send_response( __('Invalid reCAPTCHA', 'wpe-contact-form'), false );
         }
 
-        // Get receiver according subject
-        $email_to = 'pb+test@buzzbrothers.ch';
-        if( !$email_to || !filter_var($email_to, FILTER_VALIDATE_EMAIL) ) {
-            Helper::form_send_response( __('Invalid receiver', 'wpe-contact-form'), false );
-        }
-
         // Insert entry information
-        // $entry_informations = [];
-        // foreach( self::get_fields() as $key_field => $label_field ) {
-        //     if( isset($_POST[$key_field]) ) {
-        //         $entry_informations[ WPE_CF_METADATA_PREFIX . $key_field ] = sanitize_textarea_field($_POST[$key_field]);
-        //     }
-        // }
-        Entry::add_entry([
-            'post_title'    => $_POST['firstname'] . ' ' .$_POST['lastname'] . ' (' . $_POST['email'] . ')',
-            // 'meta_input'    => $entry_informations
-        ]);
-        die;
+        $formInstance = new FormModel($_REQUEST['form_id']);
+        $formInstance->add_entry($_REQUEST);
+        
         // $message_email_sender = '<i>' . stripslashes(nl2br($_POST['message'])) . '</i>';
-        if( Email::send_html_email($email_to) ){
+        // if( Email::send_html_email($email_to) ){
 
-            // Email::send_html_email($_POST['email'], sprintf( __('[%s] Acknowledgment of receipt', 'wpe-contact-form'), get_option('blogname') ), __('Your message has been sent successfully.<br />Thank you.', 'wpe-contact-form')  . Email::html_separator() . $message_email_sender . Email::html_separator());
-            Helper::form_send_response( self::get_success_message(), true );
-        }
-        else{
-            Helper::form_send_response( self::get_failure_message(), false );
-        }
+        //     // Email::send_html_email($_POST['email'], sprintf( __('[%s] Acknowledgment of receipt', 'wpe-contact-form'), get_option('blogname') ), __('Your message has been sent successfully.<br />Thank you.', 'wpe-contact-form')  . Email::html_separator() . $message_email_sender . Email::html_separator());
+        //     Helper::form_send_response( self::get_success_message(), true );
+        // }
+        // else{
+        //     Helper::form_send_response( self::get_failure_message(), false );
+        // }
     }
-
-
-
-    /**
-     * Return an array with contact form fields saved in Wordpress database option
-     * 
-     */
-    public static function get_fields(){
-
-        return get_option(self::$name_fields_in_option_table, '');
-    }
-
 
 
     /**
@@ -232,7 +205,7 @@ class ContactForm {
             'show_ui'               => true,
             'show_in_menu'          => 'wpe-contact-form/admin-forms.php',
             'capability_type'       => 'post',
-            'hierarchical'          => false,
+            'hierarchical'          => true,
             'rewrite'               => false,
             'has_archive'           => false,
             'show_in_rest'          => true,
@@ -257,6 +230,5 @@ class ContactForm {
 
         register_post_type( self::$contact_form_name_custom_post_type, $args );
     }
-
 
 }

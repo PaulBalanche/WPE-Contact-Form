@@ -2,11 +2,10 @@
 
 namespace WpeContactForm;
 
-use WpeContactForm\Controllers\ContactForm as ContactFormController;
-use WpeContactForm\Controllers\Entry as EntryController;
-use WpeContactForm\Controllers\SettingsPage as SettingsPageController;
-use WpeContactForm\Controllers\BackOffice as BackOfficeController;
-use WpeContactForm\Controllers\Fields as FieldsController;
+use WpeContactForm\Controllers\Forms as FormsController;
+use WpeContactForm\Controllers\Entries as EntriesController;
+use WpeContactForm\Controllers\AdminMenu as AdminMenuController;
+use WpeContactForm\Controllers\FieldsBlock as FieldsBlockController;
 
 /**
  *
@@ -35,13 +34,10 @@ class Main {
     */
     private function __construct() {
 
-        ContactFormController::getInstance();
-        EntryController::getInstance();
-        SettingsPageController::getInstance();
-        new BackOfficeController();
-        new FieldsController();
+        new FormsController();
+        new EntriesController();
+        new AdminMenuController();
+        new FieldsBlockController();
     }
-
-
 
 }

@@ -5,25 +5,10 @@ namespace WpeContactForm\Controllers;
 /**
  *
  */
-class Entry {
+class Entries {
 
-
-
-    private static $_instance;
     public static $contact_form_entry_name_custom_post_type = 'wpe_contact_entry',
      $export_admin_post_action = 'wpe_contact_entries_export';
-
-
-	/**
-	 * Static method which instance Entry
- 	 */
-	public static function getInstance() {
-		 if (is_null(self::$_instance)) {
-			  self::$_instance = new Entry();
-		 }
-		 return self::$_instance;
-	}
-
 
 
 	/**
@@ -31,7 +16,7 @@ class Entry {
 	 *
 	 * @return void
 	 */
-	private function __construct() {
+	public function __construct() {
 
         // Register Contact Form Entry custom post type
         add_action( 'init', array($this, 'register_contact_form_entry') );
@@ -47,9 +32,60 @@ class Entry {
         add_action( 'admin_post_nopriv_' . self::$export_admin_post_action, array($this, 'export_admin_post_action') );
 
         add_action( 'admin_init', array($this, 'add_contact_form_entry_caps') );
+
+        add_filter('manage_edit-' . self::$contact_form_entry_name_custom_post_type . '_columns', [ $this, 'my_cpt_columns' ]);
+        add_action('manage_' . self::$contact_form_entry_name_custom_post_type . '_posts_custom_column', [ $this, 'my_cpt_column'], 10, 2);
+
+        add_action('restrict_manage_posts', [ $this, 'my_restrict' ]);
+        add_action('pre_get_posts', [ $this, 'my_author_filter_results' ] );
     }
 
+    public function my_cpt_columns( $columns ) {
+        $date = $columns['date'];
+        
+        unset($columns['date']);
 
+        $columns["form_id"] = "Form";
+        $columns['date'] = $date;
+        return $columns;
+    }
+
+    public function my_cpt_column( $colname, $cptid ) {
+        if ( $colname == 'form_id') {
+            
+            $formInstance = new \WpeContactForm\Models\Form(get_post_meta( $cptid, WPE_CF_METADATA_PREFIX . 'form_id', true ));
+            echo $formInstance->get_name();
+        }
+    }
+
+    public function my_restrict( $options ) {
+        $screen = get_current_screen();
+        if( $screen->id == 'edit-' . self::$contact_form_entry_name_custom_post_type ){
+            $my_args = [
+                'post_type' => 'wpe_contact_form',
+                'show_option_none' => 'All forms',
+                'name' => 'wpe_contact_form_id'
+            ];
+            if(isset($_GET['wpe_contact_form_id'])){
+                $my_args['selected'] = (int)sanitize_text_field($_GET['wpe_contact_form_id']);
+            }
+            wp_dropdown_pages($my_args);
+        }
+    }
+
+    function my_author_filter_results($query){
+        $screen = get_current_screen();
+        if( $screen->id == 'edit-' . self::$contact_form_entry_name_custom_post_type && $query->get('post_type') == self::$contact_form_entry_name_custom_post_type ){
+            if(isset($_GET['wpe_contact_form_id'])){
+                $contact_form_id = sanitize_text_field($_GET['wpe_contact_form_id']);
+                if( is_numeric($contact_form_id)){
+                    $query->set( 'meta_key', WPE_CF_METADATA_PREFIX . 'form_id' );
+                    $query->set( 'meta_value', $contact_form_id );
+                }
+            }
+        }
+    }
+    
 
     public function add_contact_form_entry_caps(){
         
@@ -66,30 +102,6 @@ class Entry {
         $wp_roles->add_cap( 'editor', 'edit_private_contact_form_entries' );
         $wp_roles->add_cap( 'editor', 'edit_published_contact_form_entries' );
         $wp_roles->add_cap( 'editor', 'read_private_contact_form_entries' );
-    }      
-
-
-
-    /**
-     * Function to insert new Contact form entry
-     * 
-     */
-    public static function add_entry( $args ){
-
-        $defaults = [
-            'post_content'  => '',
-            'post_title'    => '',
-            'post_excerpt'  => '',
-            'post_status'   => 'publish',
-            'post_type'     => self::$contact_form_entry_name_custom_post_type,
-            'meta_input'    => []
-        ];
-
-        // Merge defaults args with args passed
-        $args = wp_parse_args( $args, $defaults );
-
-        // Entry insertion
-        return wp_insert_post($args);
     }
 
 
@@ -130,7 +142,7 @@ class Entry {
             'rewrite'               => false,
             'has_archive'           => false,
             'show_in_rest'          => false,
-            'supports'              => false,
+            'supports'              => [ 'title' ],
             'labels' => [
                 'name'                  => __('Form Entries', 'wpe-contact-form'),
                 'singular_name'         => __('Form entry', 'wpe-contact-form'),
@@ -189,14 +201,8 @@ class Entry {
         
         $return_html = '';
 
-        $all_post_metadata = get_metadata('post', $post->ID);
-
-        foreach( ContactForm::get_fields() as $key_field => $label_field ) {
-            echo $key_field . ' > ' . $label_field;
-            // $return_html .= \Wpextend\TypeField::render_label_and_free_html($label_field , '', ( isset($all_post_metadata[WPE_CF_METADATA_PREFIX . $key_field]) ) ? nl2br($all_post_metadata[WPE_CF_METADATA_PREFIX . $key_field][0]) : '' );
-        }
-
-        echo $return_html;
+        $entryInstance = new \WpeContactForm\Models\Entry($post->ID);
+        echo $entryInstance->display_data();
     }
 
 
@@ -218,20 +224,20 @@ class Entry {
 
             $name_csv_file = date('Y-M-d_H:i:s') . '.csv';
             $fp = fopen( WPE_CF_PLUGIN_DIR_PATH . 'export/' . $name_csv_file, 'w');
-            fputcsv($fp, ContactForm::get_fields());
+            // fputcsv($fp, ContactForm::get_fields());
 
-            foreach( $entries as $entry ) {
+            // foreach( $entries as $entry ) {
                 
-                $csv_line_entry = [];
+            //     $csv_line_entry = [];
 
-                $metadata = get_metadata('post', $entry->ID);
-                foreach( ContactForm::get_fields() as $key_field => $label_field ) {
+            //     $metadata = get_metadata('post', $entry->ID);
+            //     foreach( ContactForm::get_fields() as $key_field => $label_field ) {
 
-                    $csv_line_entry[$key_field] = ( isset($metadata[WPE_CF_METADATA_PREFIX . $key_field]) ) ? $metadata[WPE_CF_METADATA_PREFIX . $key_field][0] : '';
-                }
+            //         $csv_line_entry[$key_field] = ( isset($metadata[WPE_CF_METADATA_PREFIX . $key_field]) ) ? $metadata[WPE_CF_METADATA_PREFIX . $key_field][0] : '';
+            //     }
 
-                fputcsv($fp, $csv_line_entry);
-            }
+            //     fputcsv($fp, $csv_line_entry);
+            // }
 
             fclose($fp);
         }

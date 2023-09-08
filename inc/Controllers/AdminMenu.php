@@ -2,7 +2,7 @@
 
 namespace WpeContactForm\Controllers;
 
-class BackOffice {
+class AdminMenu {
 
     public function __construct() {
         $this->add_actions();
