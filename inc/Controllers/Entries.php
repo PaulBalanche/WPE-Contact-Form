@@ -33,51 +33,48 @@ class Entries {
 
         add_action( 'admin_init', array($this, 'add_contact_form_entry_caps') );
 
-        add_filter('manage_edit-' . self::$contact_form_entry_name_custom_post_type . '_columns', [ $this, 'my_cpt_columns' ]);
-        add_action('manage_' . self::$contact_form_entry_name_custom_post_type . '_posts_custom_column', [ $this, 'my_cpt_column'], 10, 2);
+        add_filter('manage_edit-' . self::$contact_form_entry_name_custom_post_type . '_columns', [ $this, 'manage_admin_columns' ]);
+        add_action('manage_' . self::$contact_form_entry_name_custom_post_type . '_posts_custom_column', [ $this, 'manage_admin_columns_render'], 10, 2);
 
-        add_action('restrict_manage_posts', [ $this, 'my_restrict' ]);
-        add_action('pre_get_posts', [ $this, 'my_author_filter_results' ] );
+        add_action('restrict_manage_posts', [ $this, 'add_form_filter' ]);
+        add_action('pre_get_posts', [ $this, 'by_form_filtering' ]);
     }
 
-    public function my_cpt_columns( $columns ) {
+    public function manage_admin_columns( $columns ) {
         $date = $columns['date'];
-        
         unset($columns['date']);
-
         $columns["form_id"] = "Form";
         $columns['date'] = $date;
         return $columns;
     }
 
-    public function my_cpt_column( $colname, $cptid ) {
+    public function manage_admin_columns_render( $colname, $cptid ) {
         if ( $colname == 'form_id') {
-            
             $formInstance = new \WpeContactForm\Models\Form(get_post_meta( $cptid, WPE_CF_METADATA_PREFIX . 'form_id', true ));
             echo $formInstance->get_name();
         }
     }
 
-    public function my_restrict( $options ) {
+    public function add_form_filter( $options ) {
         $screen = get_current_screen();
         if( $screen->id == 'edit-' . self::$contact_form_entry_name_custom_post_type ){
             $my_args = [
                 'post_type' => 'wpe_contact_form',
                 'show_option_none' => 'All forms',
-                'name' => 'wpe_contact_form_id'
+                'name' => 'form_id'
             ];
-            if(isset($_GET['wpe_contact_form_id'])){
-                $my_args['selected'] = (int)sanitize_text_field($_GET['wpe_contact_form_id']);
+            if(isset($_GET['form_id'])){
+                $my_args['selected'] = (int)sanitize_text_field($_GET['form_id']);
             }
             wp_dropdown_pages($my_args);
         }
     }
 
-    function my_author_filter_results($query){
+    public function by_form_filtering($query) {
         $screen = get_current_screen();
-        if( $screen->id == 'edit-' . self::$contact_form_entry_name_custom_post_type && $query->get('post_type') == self::$contact_form_entry_name_custom_post_type ){
-            if(isset($_GET['wpe_contact_form_id'])){
-                $contact_form_id = sanitize_text_field($_GET['wpe_contact_form_id']);
+        if( $screen && is_object($screen) && isset($screen->id) && $screen->id == 'edit-' . self::$contact_form_entry_name_custom_post_type && $query->get('post_type') == self::$contact_form_entry_name_custom_post_type ){
+            if(isset($_GET['form_id'])){
+                $contact_form_id = sanitize_text_field($_GET['form_id']);
                 if( is_numeric($contact_form_id)){
                     $query->set( 'meta_key', WPE_CF_METADATA_PREFIX . 'form_id' );
                     $query->set( 'meta_value', $contact_form_id );

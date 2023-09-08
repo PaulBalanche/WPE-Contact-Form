@@ -1,6 +1,6 @@
 <?php
 
-namespace WpeContactForm\Controllers;
+namespace WpeContactForm\Services;
 
 /**
  * Email static functions 
@@ -19,8 +19,8 @@ class Email {
      */
     public static function send_html_email($to){
 
-        $email_subject = Helper::regex_email( self::get_email_subject() );
-        $email_message = Helper::regex_email( self::get_email_message() );
+        $email_subject = \WpeContactForm\Helpers\Helper::regex_email( self::get_email_subject() );
+        $email_message = \WpeContactForm\Helpers\Helper::regex_email( self::get_email_message() );
         
         $mail_html = '<html>
             <body>' . nl2br($email_message) . self::html_footer() . '</body>

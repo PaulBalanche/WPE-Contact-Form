@@ -139,4 +139,17 @@ class Form {
         return false;
     }
 
+
+    public function get_count_entries() {
+
+        $entries = get_posts([
+            'numberposts' => -1,
+            'post_type'  => \WpeContactForm\Controllers\Entries::$contact_form_entry_name_custom_post_type,
+            'meta_key' => WPE_CF_METADATA_PREFIX . 'form_id',
+            'meta_value' => $this->WP_Post->ID
+        ]);
+
+        return ( $entries && is_array($entries) ) ? count($entries) : 0;
+    }
+
 }

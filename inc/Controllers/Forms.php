@@ -43,8 +43,32 @@ class Forms {
         add_action( 'save_post', [ $this, 'save_metabox' ], 10, 2 );
 
         add_filter( 'Abt\attribute_format_form', [ $this, 'attribute_format_form' ] );
+
+        add_filter('manage_edit-' . self::$contact_form_name_custom_post_type . '_columns', [ $this, 'manage_admin_columns' ]);
+        add_action('manage_' . self::$contact_form_name_custom_post_type . '_posts_custom_column', [ $this, 'manage_admin_columns_render'], 10, 2);
     }
 
+    public function manage_admin_columns( $columns ) {
+        $date = $columns['date'];
+        unset($columns['date']);
+        $columns["entries"] = "Entries";
+        $columns['date'] = $date;
+        return $columns;
+    }
+
+    public function manage_admin_columns_render( $colname, $cptid ) {
+        if ( $colname == 'entries') {
+
+            $formInstance = new FormModel($cptid);
+            if( $formInstance->is_valid() ) {
+
+                $countEntries = $formInstance->get_count_entries();
+                if( $countEntries > 0 ) {
+                    echo '<a href="' . admin_url( 'edit.php' ) . '/?post_type=' . Entries::$contact_form_entry_name_custom_post_type . '&form_id=' . $cptid . '">' . sprintf( _n( '%s entry', '%s entries', $countEntries, 'text-domain' ), $countEntries ) . '</a>';
+                }
+            }
+        }
+    }
 
     public function attribute_format_form($form_id) {
 
@@ -156,22 +180,22 @@ class Forms {
     public function action_post_contact_form() {
 
         if( ! isset($_REQUEST['form_id']) || ! is_numeric($_REQUEST['form_id']) ) {
-            Helper::form_send_response( __('Form ID\'s missing', 'wpe-contact-form'), false );
+            \WpeContactForm\Helpers\Helper::form_send_response( __('Form ID\'s missing', 'wpe-contact-form'), false );
         }
 
         // Nounce check
         // if( !check_ajax_referer(self::$admin_post_action, false, false) ) {
-        //     Helper::form_send_response( __('Nounce error', 'wpe-contact-form'), false );
+        //     \WpeContactForm\Helpers\Helper::form_send_response( __('Nounce error', 'wpe-contact-form'), false );
         // }
 
         // Email check
         // if( !filter_var($_POST['email'], FILTER_VALIDATE_EMAIL) ) {
-        //     Helper::form_send_response( __('Invalid email', 'wpe-contact-form'), false );
+        //     \WpeContactForm\Helpers\Helper::form_send_response( __('Invalid email', 'wpe-contact-form'), false );
         // }
 
         // reCAPTCHA check
-        if( Recaptcha::recaptcha_is_enable() && ( ! isset($_POST['g-recaptcha-response']) || ! Recaptcha::recaptcha_check($_POST['g-recaptcha-response']) ) ) {
-            Helper::form_send_response( __('Invalid reCAPTCHA', 'wpe-contact-form'), false );
+        if( \WpeContactForm\Services\Recaptcha::recaptcha_is_enable() && ( ! isset($_POST['g-recaptcha-response']) || ! \WpeContactForm\Services\Recaptcha::recaptcha_check($_POST['g-recaptcha-response']) ) ) {
+            \WpeContactForm\Helpers\Helper::form_send_response( __('Invalid reCAPTCHA', 'wpe-contact-form'), false );
         }
 
         // Insert entry information
@@ -182,10 +206,10 @@ class Forms {
         // if( Email::send_html_email($email_to) ){
 
         //     // Email::send_html_email($_POST['email'], sprintf( __('[%s] Acknowledgment of receipt', 'wpe-contact-form'), get_option('blogname') ), __('Your message has been sent successfully.<br />Thank you.', 'wpe-contact-form')  . Email::html_separator() . $message_email_sender . Email::html_separator());
-        //     Helper::form_send_response( self::get_success_message(), true );
+        //     \WpeContactForm\Helpers\Helper::form_send_response( self::get_success_message(), true );
         // }
         // else{
-        //     Helper::form_send_response( self::get_failure_message(), false );
+        //     \WpeContactForm\Helpers\Helper::form_send_response( self::get_failure_message(), false );
         // }
     }
 

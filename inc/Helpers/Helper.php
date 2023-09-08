@@ -1,6 +1,6 @@
 <?php
 
-namespace WpeContactForm\Controllers;
+namespace WpeContactForm\Helpers;
 
 /**
  * Helper static functions 
