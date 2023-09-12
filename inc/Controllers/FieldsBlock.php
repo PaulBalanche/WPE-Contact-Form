@@ -18,6 +18,8 @@ class FieldsBlock {
         
         add_action( 'admin_enqueue_scripts', [$this, 'register_fields_editor_script']);
         add_action( 'init', [$this, 'register_fields_block'] );
+
+        add_filter( 'Abt\allowed_block_types_all', [ $this, 'allowed_block_types_all' ], 10, 2 );
     }
 
     /**
@@ -51,5 +53,15 @@ class FieldsBlock {
     public function render($attributes, $content, $block) {
 
         return $content;
+    }
+
+    public function allowed_block_types_all( $allowed_block_types, $post ) {
+
+        if( is_object($post) && isset($post->post) && is_object($post->post) && isset($post->post->post_type) && $post->post->post_type == 'wpe_contact_form') {
+
+            return [ 'custom/wpe-contact-form-field' ];
+        }
+        
+        return $allowed_block_types;
     }
 }
