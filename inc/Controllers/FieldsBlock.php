@@ -61,7 +61,10 @@ class FieldsBlock {
 
             return [ 'custom/wpe-contact-form-field' ];
         }
-        
+        else {
+            array_splice($allowed_block_types, array_search('custom/wpe-contact-form-field', $allowed_block_types), 1);
+        }
+
         return $allowed_block_types;
     }
 }
